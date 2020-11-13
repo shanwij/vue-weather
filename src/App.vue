@@ -3,13 +3,15 @@
     <main>
       <div class="search-box">
         <input
-          api-key="AIzaSyAhSv9zWvisiTXRPRw6K8AE0DCmrRMpQcU"
+          ref="origin"
           type="text" 
           class="search-bar" 
+          id="autocomplete"
           placeholder="Search..."
           v-model="query"
           @keypress="fetchWeather"
         />
+        <button @click="submit" class="btn">Submit</button>
       </div>
 
       <div class="weather-wrap" v-if="typeof weather.main != 'undefined'">
@@ -29,7 +31,7 @@
 
 <script>
 
-
+import * as VueGoogleMaps from 'vue2-google-maps'
 export default {
   name: 'app',
   data () {
@@ -40,6 +42,21 @@ export default {
       weather: {}
     }
   },
+  computed: {
+    google: VueGoogleMaps.gmapApi
+  },
+
+  mounted() {
+    new VueGoogleMaps.gmapApi.maps.places.Autocomplete(
+      document.getElementById("autocomplete"),
+      {
+        mounted: new VueGoogleMaps.gmapApi.maps.LatLngBounds(
+          new VueGoogleMaps.gmapApi.maps.Lating(45.4215296 , -75.6971931)
+        )
+      }
+    )
+  },
+
   methods: {
     fetchWeather (e) {
       if (e.key == "Enter") {
@@ -48,7 +65,15 @@ export default {
             return res.json();
           }).then(this.setResults);
       }
+      
     },
+    submit(){
+          fetch(`${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`)
+          .then(res => {
+            return res.json();
+          }).then(this.setResults);
+    },
+
     setResults (results) {
       this.weather = results;
     },
@@ -62,6 +87,7 @@ export default {
       let year = d.getFullYear();
       return `${day} ${date} ${month} ${year}`;
     }
+    
   }
 }
 </script>
@@ -82,8 +108,9 @@ body {
   transition: 0.4s;
 }
 #app.warm {
-  background-color: red;
+  background-image: linear-gradient(to bottom, #D382ED, #FF6FB4,#F89DAF);
 }
+
 main {
   min-height: 100vh;
   padding: 25px;
@@ -149,5 +176,15 @@ main {
   font-weight: 700;
   font-style: italic;
   text-shadow: 3px 6px rgba(0, 0, 0, 0.25);
+}
+.btn{
+  color: rgba(112, 110, 110, 0.836);
+  font-size: 20px;
+  width: 100px;
+  height: 40px;
+  background-color:rgba(255, 255, 255, 0.445);
+  border-radius: 16px;
+  margin: 20px 0px;
+  box-shadow: 3px 6px rgba(0, 0, 0, 0.25);
 }
 </style>
